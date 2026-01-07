@@ -8,16 +8,18 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 Write-Host "=== Setup FPS Booster Auto-Start Admin ===" -ForegroundColor Cyan
 Write-Host ""
 
-# Demander le chemin du programme
-$p = Read-Host "Entre le chemin COMPLET de ton FPS booster"
+# Chemin du programme en dur
+$p = "C:\Users\admin1\AppData\LocalLow\fpsbooster.exe"
 
 # Vérifier que le fichier existe
 if (-not (Test-Path $p)) {
     Write-Host "ERREUR: Le fichier n'existe pas!" -ForegroundColor Red
+    Write-Host "Chemin: $p" -ForegroundColor Yellow
     pause
     Exit
 }
 
+Write-Host "Fichier trouve: $p" -ForegroundColor Green
 Write-Host "Configuration en cours..." -ForegroundColor Yellow
 
 # Créer le script VBS pour bypass UAC
